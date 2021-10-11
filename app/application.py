@@ -2,34 +2,14 @@ from faker import Faker
 import datetime
 import random
 import overpy
+import geojson
 import pandas as pandas
 
 def generate():
     records = 10000
 
     api = overpy.Overpass()
-    response = api.query("""[out:json][timeout:200];
-    (
-    way(poly:"50.666582972805926 8.305402116810889 
-        50.67057130716934 8.32040906983932 
-        50.694230917799743 8.321625849814598 
-        50.696596878862785 8.310066440049455 
-        50.695008305006169 8.305875309023497 
-        50.694298516687255 8.305537314585921 
-        50.692929639215066 8.303644545735487 
-        50.691172068139664 8.302715061032151 
-        50.686964037391832 8.298743626390618 
-        50.686119051297887 8.298050737793584 
-        50.684581176606919 8.289448779357244 
-        50.682772906365884 8.286356130253411 
-        50.681082934177994 8.285156250000012 
-        50.677314296199008 8.284023968634129 
-        50.673883652657594 8.284040868356007 
-        50.671095198547576 8.285832238875166 
-        50.667258961681078 8.302478464925846 
-        50.667258961681078 8.302478464925846 
-        50.666582972805926 8.305402116810889")[building]["addr:street"];
-    );out meta;>;out meta qt;""")
+    response = api.query(build_query())
 
     table = []
 
@@ -42,6 +22,28 @@ def generate():
 
     data_frame = pandas.DataFrame(table)
     data_frame.to_csv("fake_meldedaten.csv", header=["Geburtsjahr", "Geschlecht", "Strasse", "Hausnummer", "PLZ", "Ort"], index=False)
+
+def build_query():
+    prefix = """[out:json][timeout:200];("""
+    suffix = """[building]['addr:street'];);out meta;>;out meta qt;"""
+    q = """way(poly:'""" + create_poly() + """')"""
+
+    query = prefix + q + suffix
+    return query
+
+def create_poly():
+    file = open('./test.geojson',)
+    data = geojson.load(file)
+    coords = []
+
+    # if FeatureCollection
+    for row in data.features[0].geometry.coordinates[0]:
+        row[0], row[1] = str(row[1]), str(row[0])
+        row = " ".join(row)
+        coords.append(row)
+    
+    coords_string = " ".join(coords)
+    return coords_string
 
 def generate_single_record(way):
     fake = Faker('de_DE')
