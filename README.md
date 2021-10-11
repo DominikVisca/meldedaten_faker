@@ -1,1 +1,2 @@
-fake_meldedaten
+# Meldedaten-Faker
+Tool, zum Erzeugen von Fake-Meldedaten.
