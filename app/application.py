@@ -8,7 +8,7 @@ def generate():
     records = 10000
 
     api = overpy.Overpass()
-    response = api.query("""[out:json][timeout:100];
+    response = api.query("""[out:json][timeout:200];
     (
     way(poly:"50.666582972805926 8.305402116810889 
         50.67057130716934 8.32040906983932 
@@ -32,30 +32,25 @@ def generate():
     );out meta;>;out meta qt;""")
 
     table = []
-    fake = Faker('de_DE')
-    gender = ["m", "w"]
-    
+
     for way in response.ways:
-        row = []
-        row.append(fake.date(pattern="%Y"))
-        row.append(random.choice(gender))
-        row.append(way.tags['addr:street'])
-        row.append(way.tags['addr:housenumber']) if 'addr:housenumber' in way.tags else row.append("")
-        row.append(way.tags['addr:postcode']) if 'addr:postcode' in way.tags else row.append("")
-        row.append(way.tags['addr:city']) if 'addr:city' in way.tags else row.append("")
-        table.append(row)
+        table.append(generate_single_record(way))
 
     for i in range(records-len(table)):
-        row = []
-        random_row = random.choice(response.ways)
-        row.append(fake.date(pattern="%Y"))
-        row.append(random.choice(gender))
-        row.append(random_row.tags['addr:street'])
-        row.append(random_row.tags['addr:housenumber']) if 'addr:housenumber' in random_row.tags else row.append("")
-        row.append(random_row.tags['addr:postcode']) if 'addr:postcode' in random_row.tags else row.append("")
-        row.append(random_row.tags['addr:city']) if 'addr:city' in random_row.tags else row.append("")
-        table.append(row)
+        random_way = random.choice(response.ways)
+        table.append(generate_single_record(random_way))
 
     data_frame = pandas.DataFrame(table)
+    data_frame.to_csv("fake_meldedaten.csv", header=["Geburtsjahr", "Geschlecht", "Strasse", "Hausnummer", "PLZ", "Ort"], index=False)
 
-    data_frame.to_csv('output_data.csv', header=["Geburtsjahr", "Geschlecht", "Strasse", "Hausnummer", "PLZ", "Ort"], index=False)
+def generate_single_record(way):
+    fake = Faker('de_DE')
+
+    record = []
+    record.append(fake.date(pattern="%Y"))
+    record.append(random.choice(["w", "m"]))
+    record.append(way.tags['addr:street'])
+    record.append(way.tags['addr:housenumber']) if 'addr:housenumber' in way.tags else record.append("")
+    record.append(way.tags['addr:postcode']) if 'addr:postcode' in way.tags else record.append("")
+    record.append(way.tags['addr:city']) if 'addr:city' in way.tags else record.append("")
+    return record
