@@ -6,12 +6,13 @@ import geojson
 import pandas as pandas
 
 def generate(path):
-    geojson = path
     records = 10000
 
+    data = load_geojson(path)
+    query = build_query(data)
 
     api = overpy.Overpass()
-    response = api.query(build_query(geojson))
+    response = api.query(query)
 
     table = []
 
@@ -25,17 +26,21 @@ def generate(path):
     data_frame = pandas.DataFrame(table)
     data_frame.to_csv("fake_meldedaten.csv", header=["Geburtsjahr", "Geschlecht", "Strasse", "Hausnummer", "PLZ", "Ort"], index=False)
 
-def build_query(geojson):
+def load_geojson(path):
+    file = open(path,)
+    data = geojson.load(file)
+    return data
+
+def build_query(data):
+    polygon = create_poly(data)
     prefix = """[out:json][timeout:200];("""
     suffix = """[building]['addr:street'];);out meta;>;out meta qt;"""
-    q = """way(poly:'""" + create_poly(geojson) + """')"""
+    q = """way(poly:'""" + polygon + """')"""
 
     query = prefix + q + suffix
     return query
 
-def create_poly(geojson_file):
-    file = open(geojson_file,)
-    data = geojson.load(file)
+def create_poly(data):
     coords = []
 
     # if FeatureCollection
