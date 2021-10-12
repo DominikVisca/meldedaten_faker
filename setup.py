@@ -7,11 +7,11 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name = "meldedaten_faker",
-    version = "0.0.1",
+    version = "0.5.0",
     author = "Dominik Visca",
     author_email = "dominik.visca@hs-mainz.de",
     license = "MIT",
-    description = "Generates fake census data",
+    description = "Generates fake citizen registration data",
     long_description = "",
     long_description_content_type = "",
     url = "",

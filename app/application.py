@@ -5,9 +5,7 @@ import overpy
 import geojson
 import pandas as pandas
 
-def generate(path):
-    records = 10000
-
+def generate(records, path):
     data = load_geojson(path)
     query = build_query(data)
 
@@ -16,12 +14,17 @@ def generate(path):
 
     table = []
 
-    for way in response.ways:
-        table.append(generate_single_record(way))
+    if records >= len(response.ways):
+        for way in response.ways:
+            table.append(generate_single_record(way))
 
-    for i in range(records-len(table)):
-        random_way = random.choice(response.ways)
-        table.append(generate_single_record(random_way))
+        for i in range(records-len(table)):
+            random_way = random.choice(response.ways)
+            table.append(generate_single_record(random_way))
+    else:
+        for i in range(records):
+            random_way = random.choice(response.ways)
+            table.append(generate_single_record(random_way))
 
     data_frame = pandas.DataFrame(table)
     data_frame.to_csv("fake_meldedaten.csv", header=["Geburtsjahr", "Geschlecht", "Strasse", "Hausnummer", "PLZ", "Ort"], index=False)
