@@ -5,11 +5,13 @@ import overpy
 import geojson
 import pandas as pandas
 
-def generate():
+def generate(path):
+    geojson = path
     records = 10000
 
+
     api = overpy.Overpass()
-    response = api.query(build_query())
+    response = api.query(build_query(geojson))
 
     table = []
 
@@ -23,16 +25,16 @@ def generate():
     data_frame = pandas.DataFrame(table)
     data_frame.to_csv("fake_meldedaten.csv", header=["Geburtsjahr", "Geschlecht", "Strasse", "Hausnummer", "PLZ", "Ort"], index=False)
 
-def build_query():
+def build_query(geojson):
     prefix = """[out:json][timeout:200];("""
     suffix = """[building]['addr:street'];);out meta;>;out meta qt;"""
-    q = """way(poly:'""" + create_poly() + """')"""
+    q = """way(poly:'""" + create_poly(geojson) + """')"""
 
     query = prefix + q + suffix
     return query
 
-def create_poly():
-    file = open('./test.geojson',)
+def create_poly(geojson_file):
+    file = open(geojson_file,)
     data = geojson.load(file)
     coords = []
 

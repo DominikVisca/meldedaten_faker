@@ -6,6 +6,7 @@ def cli():
     pass
 
 @cli.command()
-def generate():
+@click.argument('path', type=click.Path(exists=True))
+def generate(path):
     """Generates fake census data"""
-    application.generate()
+    application.generate(path)
