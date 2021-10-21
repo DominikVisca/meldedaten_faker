@@ -1,3 +1,4 @@
+import click
 from faker import Faker
 import datetime
 import random
@@ -46,12 +47,24 @@ def build_query(data):
 def create_poly(data):
     coords = []
 
-    # if FeatureCollection
-    for row in data.features[0].geometry.coordinates[0]:
-        row[0], row[1] = str(row[1]), str(row[0])
-        row = " ".join(row)
-        coords.append(row)
-    
+    if data.type == "FeatureCollection":
+        for row in data.features[0].geometry.coordinates[0]:
+            row[0], row[1] = str(row[1]), str(row[0])
+            row = " ".join(row)
+            coords.append(row)
+    elif data.type == "Feature":
+        if data.geometry.type == "Polygon":
+            for row in data.geometry.coordinates[0]:
+                row[0], row[1] = str(row[1]), str(row[0])
+                row = " ".join(row)
+                coords.append(row)
+        else:
+            click.echo("Feature not a polygon")
+            quit()
+    else:
+        click.echo("Could not parse GeoJSON")
+        quit()
+        
     coords_string = " ".join(coords)
     return coords_string
 
